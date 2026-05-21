@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify - Premium Web Player</title>
+    <!-- FontAwesome CDN for premium icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link to our stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://www.scdn.co/co/artist/spotify-logo.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation Pane -->
+        <aside class="sidebar">
+            <!-- Top Nav Box -->
+            <div class="sidebar-box">
+                <div class="logo-container">
+                    <i class="fa-brands fa-spotify"></i>
+                    <span>Spotify</span>
+                </div>
+                <nav>
+                    <ul class="nav-list">
+                        <li>
+                            <a href="#" class="nav-item active" id="nav-home">
+                                <i class="fa-solid fa-house"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item" id="nav-search">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Search</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Library & Playlists Box -->
+            <div class="sidebar-box library-box">
+                <div class="library-header">
+                    <div class="library-header-title">
+                        <i class="fa-solid fa-book"></i>
+                        <span>Your Library</span>
+                    </div>
+                    <button class="add-playlist-btn" id="add-playlist-sidebar-btn" title="Create playlist">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="playlist-section">
+                    <div class="sidebar-card">
+                        <h4>Create your first playlist</h4>
+                        <p>It's easy, we'll help you</p>
+                        <button class="sidebar-card-btn" id="create-playlist-btn">Create playlist</button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Playlist list -->
+                <ul class="playlist-list" id="sidebar-playlists-list">
+                    <li class="playlist-item" id="playlist-liked-item">
+                        <div class="playlist-img-placeholder liked">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <div class="playlist-info">
+                            <h5>Liked Songs</h5>
+                            <p>Playlist • <span id="liked-count-sidebar">0</span> songs</p>
+                        </div>
+                    </li>
+                    <li class="playlist-item" id="playlist-recent-item">
+                        <div class="playlist-img-placeholder recent">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div class="playlist-info">
+                            <h5>Recently Played</h5>
+                            <p>Auto-mix • <span id="recent-count-sidebar">0</span> songs</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Custom floating shortcuts info in sidebar corner -->
+            <div class="sidebar-shortcuts-banner" id="shortcuts-trigger">
+                <i class="fa-solid fa-keyboard"></i>
+                <span>Keyboard Shortcuts (K)</span>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Content Area -->
+        <main class="main-content">
+            <!-- Header navbar with dynamic elements -->
+            <header class="header-bar">
+                <div class="header-navigation">
+                    <button class="nav-arrow-btn" id="header-back-btn" title="Go back"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="nav-arrow-btn" id="header-forward-btn" title="Go forward"><i class="fa-solid fa-chevron-right"></i></button>
+                    
+                    <!-- Search Input Box (JavaScript toggles display) -->
+                    <div class="search-container" id="header-search-container">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" class="search-input" id="search-query" placeholder="What do you want to listen to?">
+                    </div>
+                </div>
+
+                <!-- Profile avatar dropdown -->
+                <button class="profile-btn">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80" alt="Avatar">
+                    <span>Developer</span>
+                </button>
+            </header>
+
+            <!-- Views Container -->
+            <div class="view-container">
+                <!-- 1. HOME VIEW -->
+                <section class="view-section active-view" id="home-view">
+                    <h1 class="greeting-title" id="greeting">Good afternoon</h1>
+                    
+                    <!-- Quick Play playlist grid -->
+                    <div class="quick-grid">
+                        <div class="quick-card" onclick="playAllFromStart()">
+                            <img src="images/cover1.png" alt="Midnight Breeze">
+                            <h4>Lofi Chill Hits</h4>
+                            <div class="play-btn-hover"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                        <div class="quick-card" onclick="switchView('liked')">
+                            <div class="playlist-img-placeholder liked" style="width: 80px; height: 80px; font-size: 32px; border-radius: 0;">
+                                <i class="fa-solid fa-heart"></i>
+                            </div>
+                            <h4 style="margin-left: 16px;">Liked Songs</h4>
+                            <div class="play-btn-hover"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                        <div class="quick-card" onclick="playAllFromStart()">
+                            <img src="images/cover2.png" alt="Neon Dreams">
+                            <h4>Synthwave Vibes</h4>
+                            <div class="play-btn-hover"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                        <div class="quick-card" onclick="playAllFromStart()">
+                            <img src="images/cover3.png" alt="Golden Hour">
+                            <h4>Acoustic Sunset</h4>
+                            <div class="play-btn-hover"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                        <div class="quick-card" onclick="switchView('recent')">
+                            <div class="playlist-img-placeholder recent" style="width: 80px; height: 80px; font-size: 32px; border-radius: 0;">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <h4 style="margin-left: 16px;">Recently Played</h4>
+                            <div class="play-btn-hover"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                        <div class="quick-card" onclick="playAllFromStart()">
+                            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=150&auto=format&fit=crop&q=80" alt="Discover Weekly">
+                            <h4>Discover Weekly</h4>
+                            <div class="play-btn-hover"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Recently Played Section -->
+                    <div class="home-section" id="recently-played-home-section" style="display: none; margin-bottom: 32px;">
+                        <div class="section-header">
+                            <h2>Recently Played</h2>
+                            <a href="#" onclick="switchView('recent'); return false;">See all</a>
+                        </div>
+                        <div class="card-grid" id="recently-played-card-grid">
+                            <!-- Dynamic recent cards rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Recommended Section -->
+                    <div class="section-header">
+                        <h2>Your Songs</h2>
+                        <a href="#" onclick="playAllFromStart(); return false;">Play All</a>
+                    </div>
+
+                    <!-- Main card layout for tracks -->
+                    <div class="card-grid" id="songs-card-grid">
+                        <!-- Dynamic Cards will be rendered here by JS -->
+                    </div>
+
+                    <!-- Home Playlist Details list -->
+                    <div class="tracklist-container">
+                        <div class="track-row-header">
+                            <div>#</div>
+                            <div>Title</div>
+                            <div>Album</div>
+                            <div><i class="fa-regular fa-heart"></i></div>
+                            <div style="text-align: right;"><i class="fa-regular fa-clock"></i></div>
+                        </div>
+                        <div id="home-track-list">
+                            <!-- Dynamic Tracks will be rendered here by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. SEARCH VIEW -->
+                <section class="view-section" id="search-view">
+                    <h2 style="font-size: 24px; font-weight: 800; margin: 24px 0 16px 0;">Search Results</h2>
+                    
+                    <div id="search-results-empty" style="display: none; text-align: center; padding: 48px 0; color: var(--text-muted);">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size: 48px; margin-bottom: 16px; opacity: 0.2;"></i>
+                        <h3>No results found</h3>
+                        <p>Please check your spelling or search for another track name or artist.</p>
+                    </div>
+
+                    <!-- Search tracks list table -->
+                    <div class="tracklist-container" id="search-results-container" style="display: none;">
+                        <div class="track-row-header">
+                            <div>#</div>
+                            <div>Title</div>
+                            <div>Album</div>
+                            <div><i class="fa-regular fa-heart"></i></div>
+                            <div style="text-align: right;"><i class="fa-regular fa-clock"></i></div>
+                        </div>
+                        <div id="search-track-list">
+                            <!-- Dynamic Search result items -->
+                        </div>
+                    </div>
+
+                    <!-- Default search view categories (Browse All) -->
+                    <div id="search-browse-categories">
+                        <h2 style="font-size: 24px; font-weight: 800; margin: 24px 0 16px 0;">Browse all</h2>
+                        <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;">
+                            <div class="song-card" style="background: #E8115B; height: 160px; justify-content: space-between; padding: 16px; overflow: hidden; position: relative;">
+                                <h3 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Podcasts</h3>
+                                <img src="images/cover1.png" style="width: 80px; height: 80px; transform: rotate(25deg) translate(30px, 15px); position: absolute; right: 0; bottom: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="">
+                            </div>
+                            <div class="song-card" style="background: #148A08; height: 160px; justify-content: space-between; padding: 16px; overflow: hidden; position: relative;">
+                                <h3 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Lofi Chill</h3>
+                                <img src="images/cover1.png" style="width: 80px; height: 80px; transform: rotate(25deg) translate(30px, 15px); position: absolute; right: 0; bottom: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="">
+                            </div>
+                            <div class="song-card" style="background: #D84000; height: 160px; justify-content: space-between; padding: 16px; overflow: hidden; position: relative;">
+                                <h3 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Synthwave</h3>
+                                <img src="images/cover2.png" style="width: 80px; height: 80px; transform: rotate(25deg) translate(30px, 15px); position: absolute; right: 0; bottom: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="">
+                            </div>
+                            <div class="song-card" style="background: #BC5900; height: 160px; justify-content: space-between; padding: 16px; overflow: hidden; position: relative;">
+                                <h3 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Acoustic</h3>
+                                <img src="images/cover3.png" style="width: 80px; height: 80px; transform: rotate(25deg) translate(30px, 15px); position: absolute; right: 0; bottom: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="">
+                            </div>
+                            <div class="song-card" style="background: #7D4B32; height: 160px; justify-content: space-between; padding: 16px; overflow: hidden; position: relative;">
+                                <h3 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">Electro Pulse</h3>
+                                <img src="images/cover4.png" style="width: 80px; height: 80px; transform: rotate(25deg) translate(30px, 15px); position: absolute; right: 0; bottom: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="">
+                            </div>
+                            <div class="song-card" style="background: #E1118C; height: 160px; justify-content: space-between; padding: 16px; overflow: hidden; position: relative;">
+                                <h3 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">New Releases</h3>
+                                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=100&auto=format&fit=crop&q=80" style="width: 80px; height: 80px; transform: rotate(25deg) translate(30px, 15px); position: absolute; right: 0; bottom: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. LIKED SONGS VIEW -->
+                <section class="view-section" id="liked-songs-view">
+                    <div class="playlist-header-banner liked-banner">
+                        <div class="playlist-banner-img liked">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <div class="playlist-banner-info">
+                            <span class="playlist-banner-type">Playlist</span>
+                            <h1 class="playlist-banner-title">Liked Songs</h1>
+                            <div class="playlist-banner-meta">
+                                <span class="owner">Developer</span>
+                                <span class="bullet">•</span>
+                                <span id="liked-count-meta">0</span> songs
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Row -->
+                    <div class="playlist-action-row" id="liked-action-row" style="display: none;">
+                        <button class="playlist-play-btn" id="liked-play-btn" onclick="playAllLiked()">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- Track list details table -->
+                    <div class="tracklist-container" id="liked-tracks-container" style="display: none; margin-top: 0;">
+                        <div class="track-row-header">
+                            <div>#</div>
+                            <div>Title</div>
+                            <div>Album</div>
+                            <div><i class="fa-regular fa-heart"></i></div>
+                            <div style="text-align: right;"><i class="fa-regular fa-clock"></i></div>
+                        </div>
+                        <div id="liked-track-list">
+                            <!-- Dynamic hearted tracks rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="empty-state" id="liked-empty-state">
+                        <i class="fa-solid fa-heart"></i>
+                        <h3>Songs you like will appear here</h3>
+                        <p>Save songs by clicking the heart icon on any card or row across the player.</p>
+                    </div>
+                </section>
+
+                <!-- 4. RECENTLY PLAYED VIEW -->
+                <section class="view-section" id="recently-played-view">
+                    <div class="playlist-header-banner recent-banner">
+                        <div class="playlist-banner-img recent">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div class="playlist-banner-info">
+                            <span class="playlist-banner-type">Auto-mix</span>
+                            <h1 class="playlist-banner-title">Recently Played</h1>
+                            <div class="playlist-banner-meta">
+                                <span class="owner">Developer</span>
+                                <span class="bullet">•</span>
+                                <span id="recent-count-meta">0</span> songs
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Row -->
+                    <div class="playlist-action-row" id="recent-action-row" style="display: none;">
+                        <button class="playlist-play-btn" id="recent-play-btn" onclick="playAllRecent()">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- Track list table -->
+                    <div class="tracklist-container" id="recent-tracks-container" style="display: none; margin-top: 0;">
+                        <div class="track-row-header">
+                            <div>#</div>
+                            <div>Title</div>
+                            <div>Album</div>
+                            <div><i class="fa-regular fa-heart"></i></div>
+                            <div style="text-align: right;"><i class="fa-regular fa-clock"></i></div>
+                        </div>
+                        <div id="recent-track-list">
+                            <!-- Dynamic recent tracks -->
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="empty-state" id="recent-empty-state">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <h3>Your history is empty</h3>
+                        <p>Songs you listen to will be tracked and displayed here in real time.</p>
+                    </div>
+                </section>
+
+                <!-- 5. DYNAMIC CUSTOM PLAYLIST VIEW -->
+                <section class="view-section" id="custom-playlist-view">
+                    <div class="playlist-header-banner custom-banner" id="custom-playlist-banner">
+                        <div class="playlist-banner-img custom">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                        <div class="playlist-banner-info">
+                            <span class="playlist-banner-type">Playlist</span>
+                            <h1 class="playlist-banner-title" id="custom-playlist-title">My Playlist</h1>
+                            <div class="playlist-banner-meta">
+                                <span class="owner">Developer</span>
+                                <span class="bullet">•</span>
+                                <span id="custom-playlist-count-meta">0</span> songs
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Row -->
+                    <div class="playlist-action-row" id="custom-playlist-action-row">
+                        <button class="playlist-play-btn" id="custom-playlist-play-btn">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <button class="sidebar-card-btn" id="delete-playlist-btn" style="background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 20px;">
+                            Delete Playlist
+                        </button>
+                    </div>
+
+                    <!-- Track list table -->
+                    <div class="tracklist-container" id="custom-playlist-tracks-container">
+                        <div class="track-row-header">
+                            <div>#</div>
+                            <div>Title</div>
+                            <div>Album</div>
+                            <div><i class="fa-regular fa-heart"></i></div>
+                            <div style="text-align: right;"><i class="fa-regular fa-clock"></i></div>
+                        </div>
+                        <div id="custom-playlist-track-list">
+                            <!-- Dynamic custom playlist tracks -->
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="empty-state" id="custom-playlist-empty-state">
+                        <i class="fa-solid fa-music"></i>
+                        <h3>This playlist is empty</h3>
+                        <p>Click the <b>+</b> icon or vertical menu on any song across the player to add songs here.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Dynamic Slide-out Queue Panel Drawer -->
+        <aside class="queue-panel" id="queue-drawer">
+            <div class="queue-header">
+                <h3>Play Queue</h3>
+                <button class="close-queue-btn" id="close-queue-btn" title="Close Queue">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="queue-content">
+                <div class="queue-section-title">Now playing</div>
+                <div class="queue-now-playing-container" id="queue-now-playing-box">
+                    <!-- Loaded via JS -->
+                </div>
+
+                <div class="queue-section-header">
+                    <div class="queue-section-title">Next up</div>
+                    <button class="clear-queue-btn" id="clear-queue-btn">Clear queue</button>
+                </div>
+                <div class="queue-upcoming-list" id="queue-upcoming-list">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Bottom Audio Controller Bar -->
+        <footer class="bottom-player">
+            <!-- Left Pane: Song Info & Hearts -->
+            <div class="player-track-info">
+                <div class="player-album-art-container">
+                    <img src="images/cover1.png" alt="Now Playing" class="player-album-art" id="current-player-art">
+                </div>
+                <div class="player-song-meta">
+                    <div class="player-song-title-wrapper" style="display:flex; align-items:center; gap:6px;">
+                        <span class="player-song-title" id="current-player-title">Midnight Breeze</span>
+                        <!-- Small active Equalizer inside player bar -->
+                        <div class="equalizer-icon" id="player-bar-equalizer" style="margin-bottom:2px;">
+                            <span class="equalizer-bar"></span>
+                            <span class="equalizer-bar"></span>
+                            <span class="equalizer-bar"></span>
+                        </div>
+                    </div>
+                    <div class="player-song-artist" id="current-player-artist">Lofi Echoes</div>
+                </div>
+                <button class="player-like-btn" id="current-player-heart" title="Save to Liked Songs">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+            </div>
+
+            <!-- Middle Pane: Player Action Controls & Scrubber Slider -->
+            <div class="player-controls">
+                <div class="control-buttons">
+                    <button class="player-btn" id="ctrl-shuffle" title="Enable Shuffle"><i class="fa-solid fa-shuffle"></i></button>
+                    <button class="player-btn" id="ctrl-prev" title="Previous"><i class="fa-solid fa-backward-step"></i></button>
+                    <button class="player-btn play-pause-btn" id="ctrl-play-pause" title="Play"><i class="fa-solid fa-play"></i></button>
+                    <button class="player-btn" id="ctrl-next" title="Next"><i class="fa-solid fa-forward-step"></i></button>
+                    <button class="player-btn" id="ctrl-repeat" title="Enable Repeat (one/all)"><i class="fa-solid fa-repeat"></i></button>
+                </div>
+
+                <div class="timeline-container">
+                    <span class="time-label" id="current-time">0:00</span>
+                    <input type="range" class="slider" id="progress-slider" min="0" max="100" value="0">
+                    <span class="time-label" id="total-duration">0:00</span>
+                </div>
+            </div>
+
+            <!-- Right Pane: Sound Output Settings & Volume Slider -->
+            <div class="player-extra-controls">
+                <button class="player-btn" id="ctrl-queue" title="Queue"><i class="fa-solid fa-list-ul"></i></button>
+                <div class="volume-container">
+                    <button class="player-btn" id="ctrl-mute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
+                    <input type="range" class="slider volume-slider" id="volume-slider" min="0" max="100" value="80">
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Hidden HTML5 Audio Element -->
+    <audio id="audio-element" preload="auto"></audio>
+
+    <!-- Context menu dialog for Add to Playlist options (absolute position styled) -->
+    <div class="context-menu-playlist" id="song-context-menu">
+        <ul class="context-menu-list">
+            <li class="context-menu-item" id="context-menu-like-toggle">
+                <i class="fa-regular fa-heart"></i>
+                <span>Add to Liked Songs</span>
+            </li>
+            <li class="context-menu-divider"></li>
+            <li class="context-menu-submenu-header">Add to Playlist</li>
+            <!-- Custom dynamic playlists listed here -->
+            <div id="context-playlists-anchor"></div>
+        </ul>
+    </div>
+
+    <!-- Floating Keyboard Shortcuts Modal Guide Overlay -->
+    <div class="modal-overlay" id="shortcuts-modal">
+        <div class="shortcuts-modal-card">
+            <div class="shortcuts-header">
+                <h2><i class="fa-solid fa-keyboard" style="color: var(--spotify-green);"></i> Keyboard Shortcuts Guide</h2>
+                <button class="close-modal-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="shortcuts-grid">
+                <div class="shortcut-row">
+                    <span class="shortcut-key">Spacebar</span>
+                    <span class="shortcut-desc">Play / Pause toggle</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">ArrowRight</span>
+                    <span class="shortcut-desc">Skip forward 10 seconds</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">ArrowLeft</span>
+                    <span class="shortcut-desc">Rewind 10 seconds</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">N</span>
+                    <span class="shortcut-desc">Skip to Next Track</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">P</span>
+                    <span class="shortcut-desc">Skip to Previous Track</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">M</span>
+                    <span class="shortcut-desc">Mute / Unmute Volume toggle</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">L</span>
+                    <span class="shortcut-desc">Like / Unlike current song</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">K</span>
+                    <span class="shortcut-desc">Toggle this Keyboard Shortcuts Help modal</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">Q</span>
+                    <span class="shortcut-desc">Toggle Queue Drawer panel</span>
+                </div>
+            </div>
+            <div class="shortcuts-footer">
+                Focus anywhere on the player and press any key above!
+            </div>
+        </div>
+    </div>
+
+    <!-- Smooth Page Loading Screen Spinner -->
+    <div class="page-loading-screen" id="page-loader">
+        <i class="fa-brands fa-spotify spotify-pulse-logo"></i>
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- Toast Notification Banner for shortcuts/likes alerts -->
+    <div class="toast-notification" id="toast-banner">Added to library</div>
+
+    <!-- Script file -->
+    <script src="app.js"></script>
+</body>
+</html>
