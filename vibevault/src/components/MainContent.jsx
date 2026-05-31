@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Play, Pause, Heart, Trash2, Plus, Music, Search, 
   Volume2, Clock, Calendar, AlertCircle, PlusCircle, Check, Sparkles, Menu, ChevronLeft, ChevronRight
@@ -30,12 +30,53 @@ const MainContent = ({
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Filter songs based on search
+  // JioSaavn API Search state
+  const [apiResults, setApiResults] = useState([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const searchDebounce = useRef(null);
+
+  // Filter local songs based on search
   const filteredSongs = songs.filter(song => 
     song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     song.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
     song.album.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Fetch from JioSaavn API
+  const fetchFromSaavn = useCallback(async (query) => {
+    if (!query.trim()) {
+      setApiResults([]);
+      setApiError(null);
+      return;
+    }
+    setApiLoading(true);
+    setApiError(null);
+    try {
+      const res = await fetch(`https://saavn.sumit.co/api/search/songs?query=${encodeURIComponent(query)}&limit=20`);
+      const data = await res.json();
+      if (data.success && data.data && data.data.results) {
+        setApiResults(data.data.results);
+      } else {
+        setApiResults([]);
+      }
+    } catch (err) {
+      setApiError('Could not connect to search. Check your internet.');
+      setApiResults([]);
+    } finally {
+      setApiLoading(false);
+    }
+  }, []);
+
+  // Debounced search trigger
+  useEffect(() => {
+    if (activeView !== 'search') return;
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => {
+      fetchFromSaavn(searchQuery);
+    }, 500);
+    return () => clearTimeout(searchDebounce.current);
+  }, [searchQuery, activeView, fetchFromSaavn]);
 
   const handlePlaylistCreateSubmit = (e) => {
     e.preventDefault();
@@ -199,56 +240,145 @@ const MainContent = ({
       {activeView === 'search' && (
         <div className="flex flex-col gap-6 animate-in fade-in duration-200">
           
-          {/* Cyber Search Bar */}
-          <div className="relative w-full max-w-xl">
+          {/* Search Header */}
+          <div>
+            <h2 className="text-2xl font-black text-white mb-1">Search</h2>
+            <p className="text-sm text-slate-500">Search millions of songs from JioSaavn</p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full max-w-2xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search offline tracks, artists, or albums..."
+              placeholder="Search songs, artists, albums..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 rounded-2xl bg-white/5 border border-white/10 focus:border-cyber-green/50 outline-none text-slate-200 placeholder-slate-500 text-sm font-semibold transition-all shadow-[0_0_20px_rgba(0,0,0,0.3)] focus:shadow-[0_0_30px_rgba(16,185,129,0.08)]"
+              autoFocus
+              className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white/8 border border-white/10 focus:border-[#1DB954]/60 outline-none text-slate-100 placeholder-slate-500 text-sm font-medium transition-all shadow-[0_0_20px_rgba(0,0,0,0.3)] focus:shadow-[0_0_30px_rgba(29,185,84,0.12)] focus:bg-white/10"
             />
+            {apiLoading && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <div className="w-4 h-4 border-2 border-[#1DB954]/40 border-t-[#1DB954] rounded-full animate-spin"></div>
+              </div>
+            )}
           </div>
 
-          {/* Search Table Results */}
-          {searchQuery ? (
-            filteredSongs.length > 0 ? (
-              <div className="mt-4">
-                <h3 className="text-xs font-extrabold tracking-wider text-slate-500 uppercase mb-4">Matches found ({filteredSongs.length})</h3>
-                {renderSongsTable(filteredSongs)}
-              </div>
-            ) : (
-              <div className="py-20 flex flex-col items-center justify-center text-slate-500 text-center">
-                <AlertCircle className="w-12 h-12 mb-3 text-slate-600 animate-bounce" />
-                <h4 className="font-bold text-slate-400">No matching songs inside vault</h4>
-                <p className="text-sm mt-1">Please try checking your spelling or search terms.</p>
-              </div>
-            )
-          ) : (
+          {/* Results */}
+          {!searchQuery ? (
             /* Browse Category Cards if Search is Empty */
             <div>
-              <h3 className="text-xs font-extrabold tracking-wider text-slate-500 uppercase mb-4">Browse genres</h3>
+              <h3 className="text-xs font-extrabold tracking-wider text-slate-500 uppercase mb-4">Browse categories</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div className="h-28 md:h-32 rounded-2xl p-4 md:p-5 bg-gradient-to-br from-purple-600 to-indigo-800 border border-white/5 relative overflow-hidden group cursor-pointer hover:scale-[1.03] transition-all">
-                  <h4 className="font-black text-lg md:text-xl text-white">Lofi Beats</h4>
-                  <Music className="w-16 h-16 absolute right-0 bottom-0 rotate-12 text-white/10 translate-y-3 translate-x-3 group-hover:scale-110 duration-200" />
-                </div>
-                <div className="h-28 md:h-32 rounded-2xl p-4 md:p-5 bg-gradient-to-br from-emerald-600 to-teal-800 border border-white/5 relative overflow-hidden group cursor-pointer hover:scale-[1.03] transition-all">
-                  <h4 className="font-black text-lg md:text-xl text-white">Electro</h4>
-                  <Music className="w-16 h-16 absolute right-0 bottom-0 rotate-12 text-white/10 translate-y-3 translate-x-3 group-hover:scale-110 duration-200" />
-                </div>
-                <div className="h-28 md:h-32 rounded-2xl p-4 md:p-5 bg-gradient-to-br from-pink-600 to-red-800 border border-white/5 relative overflow-hidden group cursor-pointer hover:scale-[1.03] transition-all">
-                  <h4 className="font-black text-lg md:text-xl text-white">Synthwave</h4>
-                  <Music className="w-16 h-16 absolute right-0 bottom-0 rotate-12 text-white/10 translate-y-3 translate-x-3 group-hover:scale-110 duration-200" />
-                </div>
-                <div className="h-28 md:h-32 rounded-2xl p-4 md:p-5 bg-gradient-to-br from-amber-600 to-orange-800 border border-white/5 relative overflow-hidden group cursor-pointer hover:scale-[1.03] transition-all">
-                  <h4 className="font-black text-lg md:text-xl text-white">Acoustic</h4>
-                  <Music className="w-16 h-16 absolute right-0 bottom-0 rotate-12 text-white/10 translate-y-3 translate-x-3 group-hover:scale-110 duration-200" />
-                </div>
+                {[['Tamil', 'from-rose-600 to-red-900', 'Tamil'], ['Hindi', 'from-orange-500 to-amber-800', 'Hindi'], ['Melody', 'from-purple-600 to-indigo-900', 'Melody'], ['Beats', 'from-emerald-600 to-teal-900', 'Beats'], ['Lofi', 'from-blue-600 to-cyan-900', 'Lofi'], ['Anirudh', 'from-pink-600 to-rose-900', 'Anirudh'], ['ARR', 'from-yellow-500 to-orange-800', 'A.R. Rahman'], ['Trending', 'from-violet-600 to-purple-900', 'Trending']].map(([query, gradient, label]) => (
+                  <button
+                    key={query}
+                    onClick={() => setSearchQuery(query)}
+                    className={`h-28 md:h-32 rounded-2xl p-4 md:p-5 bg-gradient-to-br ${gradient} border border-white/5 relative overflow-hidden group cursor-pointer hover:scale-[1.03] transition-all text-left w-full`}
+                  >
+                    <h4 className="font-black text-lg md:text-xl text-white">{label}</h4>
+                    <Music className="w-16 h-16 absolute right-0 bottom-0 rotate-12 text-white/10 translate-y-3 translate-x-3 group-hover:scale-110 duration-200" />
+                  </button>
+                ))}
               </div>
             </div>
-          )}
+          ) : apiError ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-500 text-center">
+              <AlertCircle className="w-12 h-12 mb-3 text-red-500" />
+              <h4 className="font-bold text-slate-400">{apiError}</h4>
+            </div>
+          ) : apiLoading && apiResults.length === 0 ? (
+            /* Loading Skeleton */
+            <div className="flex flex-col gap-2 mt-2">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3 rounded-xl">
+                  <div className="w-10 h-10 rounded-lg skeleton-shimmer flex-shrink-0"></div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <div className="h-3 w-48 rounded skeleton-shimmer"></div>
+                    <div className="h-2 w-32 rounded skeleton-shimmer"></div>
+                  </div>
+                  <div className="h-2 w-10 rounded skeleton-shimmer"></div>
+                </div>
+              ))}
+            </div>
+          ) : apiResults.length > 0 ? (
+            <div>
+              <h3 className="text-xs font-extrabold tracking-wider text-slate-500 uppercase mb-4">Results for "{searchQuery}" ({apiResults.length})</h3>
+              <div className="flex flex-col gap-1">
+                {apiResults.map((song, index) => {
+                  const cover = song.image?.find(i => i.quality === '150x150')?.url || song.image?.[1]?.url || '';
+                  const artists = song.artists?.primary?.map(a => a.name).join(', ') || 'Unknown Artist';
+                  const bestUrl = song.downloadUrl?.find(d => d.quality === '160kbps')?.url ||
+                                  song.downloadUrl?.find(d => d.quality === '96kbps')?.url ||
+                                  song.downloadUrl?.[song.downloadUrl.length - 1]?.url || '';
+                  const duration = song.duration ? `${Math.floor(song.duration/60)}:${String(song.duration%60).padStart(2,'0')}` : '--:--';
+                  const isActive = activeSong?.src === bestUrl;
+
+                  return (
+                    <button
+                      key={song.id}
+                      onClick={() => onSongSelect({
+                        id: `saavn_${song.id}`,
+                        title: song.name,
+                        artist: artists,
+                        album: song.album?.name || 'JioSaavn',
+                        src: bestUrl,
+                        cover: cover,
+                        duration: duration,
+                        file: null
+                      })}
+                      className={`flex items-center gap-4 px-4 py-3 rounded-xl text-left w-full group transition-all duration-150 ${
+                        isActive 
+                          ? 'bg-[#1DB954]/10 border border-[#1DB954]/20' 
+                          : 'hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      {/* Index / Play icon */}
+                      <div className="w-6 text-center flex-shrink-0">
+                        {isActive && isPlaying ? (
+                          <div className="flex items-end justify-center gap-[2px] h-4">
+                            {[1,2,3].map(b => (
+                              <div key={b} className="w-[3px] bg-[#1DB954] rounded-sm animate-bounce" style={{animationDelay: `${b*0.1}s`, height: `${8+b*4}px`}}></div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className={`text-xs font-semibold group-hover:hidden ${isActive ? 'text-[#1DB954]' : 'text-slate-500'}`}>{index + 1}</span>
+                        )}
+                        <Play className={`w-4 h-4 text-white hidden group-hover:block ${isActive && isPlaying ? '!hidden' : ''}`} />
+                      </div>
+
+                      {/* Album art */}
+                      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[#282828]">
+                        {cover ? (
+                          <img src={cover} alt={song.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Music className="w-4 h-4 text-slate-600" /></div>
+                        )}
+                      </div>
+
+                      {/* Song info */}
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold text-sm truncate ${isActive ? 'text-[#1DB954]' : 'text-slate-200'}`}>{song.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{artists}</p>
+                      </div>
+
+                      {/* Album */}
+                      <p className="text-xs text-slate-600 truncate hidden md:block max-w-[120px]">{song.album?.name || ''}</p>
+
+                      {/* Duration */}
+                      <span className="text-xs text-slate-500 flex-shrink-0 font-mono">{duration}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : searchQuery && !apiLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-500 text-center">
+              <AlertCircle className="w-12 h-12 mb-3 text-slate-600" />
+              <h4 className="font-bold text-slate-400">No results found for "{searchQuery}"</h4>
+              <p className="text-sm mt-1">Try a different search term.</p>
+            </div>
+          ) : null}
 
         </div>
       )}
