@@ -102,172 +102,126 @@ const MusicPlayer = ({
   }, [isPlaying, analyserNode]);
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 h-[90px] bg-black border-t border-[#282828] flex items-center justify-between px-4 md:px-6 z-50">
-      
-      {/* 1. Left side: Song details */}
-      <div className="flex items-center gap-4 w-1/4">
+    <footer className="fixed bottom-0 left-0 right-0 h-[72px] bg-[#181818] border-t border-[#282828] flex items-center justify-between px-4 z-50 select-none">
+
+      {/* LEFT: Song Info */}
+      <div className="flex items-center gap-3 w-[30%] min-w-0">
         {currentSong ? (
           <>
-            <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-white/10 active-breathing-cover flex-shrink-0">
+            <div className="relative w-14 h-14 rounded overflow-hidden flex-shrink-0 shadow-lg">
               {currentSong.cover ? (
-                <img 
-                  src={currentSong.cover} 
-                  alt="Cover" 
-                  className={`w-full h-full object-cover transition-transform duration-500 ${isPlaying ? 'animate-spin-slow' : ''}`} 
-                />
+                <img src={currentSong.cover} alt="Cover" className="w-full h-full object-cover" />
               ) : (
-                <div className={`w-full h-full bg-gradient-to-tr from-cyber-purple/20 to-cyber-green/10 flex items-center justify-center text-cyber-purple ${isPlaying ? 'animate-spin-slow' : ''}`}>
-                  <Disc className="w-6 h-6" />
+                <div className="w-full h-full bg-[#282828] flex items-center justify-center">
+                  <Disc className="w-6 h-6 text-[#6a6a6a]" />
                 </div>
               )}
             </div>
-
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-slate-100 truncate hover:underline cursor-pointer">
-                {currentSong.title}
-              </span>
-              <span className="text-xs text-slate-400 truncate">
-                {currentSong.artist}
-              </span>
+              <span className="text-sm font-medium text-white truncate hover:underline cursor-pointer">{currentSong.title}</span>
+              <span className="text-xs text-[#b3b3b3] truncate hover:text-white hover:underline cursor-pointer">{currentSong.artist}</span>
             </div>
-
-            {/* Favorite heart */}
-            <button 
+            <button
               onClick={onToggleFavorite}
-              className={`p-2 rounded-lg hover:bg-white/5 transition-all active:scale-95 duration-100 flex-shrink-0 ${isFavorite ? 'text-red-500' : 'text-slate-400 hover:text-white'}`}
+              className={`p-2 ml-1 rounded-full hover:bg-white/10 transition-colors flex-shrink-0 ${isFavorite ? 'text-[#1DB954]' : 'text-[#6a6a6a] hover:text-white'}`}
             >
-              <Heart className="w-5 h-5 fill-current" style={{ fill: isFavorite ? 'currentColor' : 'none' }} />
+              <Heart className="w-4 h-4" style={{ fill: isFavorite ? 'currentColor' : 'none', stroke: 'currentColor' }} />
             </button>
           </>
         ) : (
-          <div className="flex items-center gap-3 text-slate-500">
-            <Disc className="w-8 h-8 animate-spin-slow opacity-30" />
-            <div className="flex flex-col text-xs font-semibold uppercase tracking-wider">
-              <span>VibeVault Offline</span>
-              <span className="text-[10px] text-slate-600">Select or drop a song</span>
+          <div className="flex items-center gap-3 text-[#6a6a6a]">
+            <div className="w-14 h-14 rounded bg-[#282828] flex items-center justify-center flex-shrink-0">
+              <Disc className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-sm text-[#b3b3b3]">No song selected</p>
+              <p className="text-xs text-[#6a6a6a]">Search and play a song</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* 2. Middle side: Main controls and visualizer */}
-      <div className="flex flex-col items-center gap-2 flex-grow max-w-2xl px-10">
-        
-        {/* Real-time Canvas visualizer container (hidden to match Spotify) */}
-        <div className="w-full flex justify-center opacity-0 hover:opacity-10 transition-opacity absolute pointer-events-none">
-          <canvas ref={canvasRef} className="w-full pointer-events-none h-4" />
-        </div>
-
-        {/* Buttons Controls */}
-        <div className="flex items-center gap-6">
-          <button 
+      {/* CENTER: Controls */}
+      <div className="flex flex-col items-center gap-1.5 flex-1 max-w-[600px] px-4">
+        <div className="flex items-center gap-4">
+          <button
             onClick={onToggleShuffle}
-            className={`p-2 rounded-lg hover:scale-105 active:scale-95 duration-100 transition-colors relative ${isShuffle ? 'text-cyber-green' : 'text-slate-400 hover:text-white'}`}
+            className={`p-2 rounded-full hover:bg-white/10 transition-colors relative ${isShuffle ? 'text-[#1DB954]' : 'text-[#b3b3b3] hover:text-white'}`}
             title="Shuffle"
           >
             <Shuffle className="w-4 h-4" />
-            {isShuffle && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyber-green shadow-[0_0_5px_#10B981]" />}
+            {isShuffle && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#1DB954]" />}
           </button>
 
-          <button 
-            onClick={onPrev}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:scale-110 active:scale-90 transition-all duration-100"
-            title="Previous"
-          >
+          <button onClick={onPrev} className="p-2 rounded-full text-[#b3b3b3] hover:text-white hover:bg-white/10 transition-all" title="Previous">
             <SkipBack className="w-5 h-5 fill-current" />
           </button>
 
-          <button 
+          <button
             onClick={onTogglePlay}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 duration-100 transition-transform"
-            title={isPlaying ? "Pause" : "Play"}
+            className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-md"
+            title={isPlaying ? 'Pause' : 'Play'}
           >
-            {isPlaying ? <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current" /> : <Play className="w-4 h-4 md:w-5 md:h-5 fill-current ml-0.5" />}
+            {isPlaying
+              ? <Pause className="w-4 h-4 fill-current" />
+              : <Play className="w-4 h-4 fill-current ml-0.5" />}
           </button>
 
-          <button 
-            onClick={onNext}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:scale-110 active:scale-90 transition-all duration-100"
-            title="Next"
-          >
+          <button onClick={onNext} className="p-2 rounded-full text-[#b3b3b3] hover:text-white hover:bg-white/10 transition-all" title="Next">
             <SkipForward className="w-5 h-5 fill-current" />
           </button>
 
-          <button 
+          <button
             onClick={onToggleRepeat}
-            className={`p-2 rounded-lg hover:scale-105 active:scale-95 duration-100 transition-colors relative ${isRepeat ? 'text-cyber-purple animate-pulse' : 'text-slate-400 hover:text-white'}`}
-            title="Repeat Context"
+            className={`p-2 rounded-full hover:bg-white/10 transition-colors relative ${isRepeat ? 'text-[#1DB954]' : 'text-[#b3b3b3] hover:text-white'}`}
+            title="Repeat"
           >
             <Repeat className="w-4 h-4" />
-            {isRepeat && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyber-purple shadow-[0_0_5px_#8B5CF6]" />}
+            {isRepeat && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#1DB954]" />}
           </button>
         </div>
 
-        {/* Timeline Progress seek bar */}
-        <div className="w-full flex items-center gap-3 mt-1">
-          <span className="text-[10px] font-bold text-slate-500 w-10 text-right">{formatTime(currentTime)}</span>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={progressPercent}
-            onChange={(e) => {
-              if (duration > 0) {
-                const targetTime = (parseFloat(e.target.value) / 100) * duration;
-                onSeek(targetTime);
-              }
-            }}
-            className="flex-grow h-1.5 transition-all duration-200 cursor-pointer"
-            style={{
-              background: `linear-gradient(to right, #10B981 0%, #10B981 ${progressPercent}%, rgba(255, 255, 255, 0.1) ${progressPercent}%, rgba(255, 255, 255, 0.1) 100%)`
-            }}
-          />
-          <span className="text-[10px] font-bold text-slate-500 w-10 text-left">{formatTime(duration)}</span>
+        {/* Progress Bar */}
+        <div className="w-full flex items-center gap-2">
+          <span className="text-[11px] text-[#6a6a6a] w-9 text-right tabular-nums">{formatTime(currentTime)}</span>
+          <div className="flex-1 group relative h-1 flex items-center">
+            <input
+              type="range"
+              min="0" max="100"
+              value={progressPercent}
+              onChange={(e) => { if (duration > 0) onSeek((parseFloat(e.target.value) / 100) * duration); }}
+              className="w-full h-1 rounded-full cursor-pointer"
+              style={{ background: `linear-gradient(to right, #1DB954 ${progressPercent}%, #4d4d4d ${progressPercent}%)` }}
+            />
+          </div>
+          <span className="text-[11px] text-[#6a6a6a] w-9 tabular-nums">{formatTime(duration)}</span>
         </div>
-
       </div>
 
-      {/* 3. Right side: Volume and sleep timer actions */}
-      <div className="flex items-center gap-4 w-1/4 justify-end">
-        
-        {/* Sleep Timer Display trigger */}
-        <button 
+      {/* RIGHT: Volume */}
+      <div className="flex items-center gap-2 w-[30%] justify-end">
+        <button
           onClick={onOpenTimer}
-          className={`p-2.5 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2 ${
-            activeTimer !== null 
-              ? 'border-cyber-purple text-cyber-purple bg-cyber-purple/5 shadow-[0_0_15px_rgba(139,92,246,0.15)]' 
-              : 'border-white/5 bg-white/5 text-slate-400 hover:text-white'
-          }`}
+          className={`p-2 rounded-full hover:bg-white/10 transition-colors ${activeTimer !== null ? 'text-[#1DB954]' : 'text-[#b3b3b3] hover:text-white'}`}
           title="Sleep Timer"
         >
           <Moon className="w-4 h-4" />
-          {activeTimer !== null && (
-            <span className="text-xs font-extrabold tracking-wider">{activeTimer}m</span>
-          )}
         </button>
-
-        {/* Volume controls */}
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={onToggleMute}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:scale-105 transition-transform"
-            title={isMuted ? "Unmute" : "Mute"}
-          >
-            {isMuted || volume === 0 ? <VolumeX className="w-5 h-5 text-red-500" /> : <Volume2 className="w-5 h-5" />}
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={isMuted ? 0 : volume * 100}
-            onChange={(e) => onVolumeChange(parseFloat(e.target.value) / 100)}
-            className="w-20 h-1 cursor-pointer"
-            style={{
-              background: `linear-gradient(to right, #8B5CF6 0%, #8B5CF6 ${isMuted ? 0 : volume * 100}%, rgba(255, 255, 255, 0.1) ${isMuted ? 0 : volume * 100}%, rgba(255, 255, 255, 0.1) 100%)`
-            }}
-          />
-        </div>
-
+        <button
+          onClick={onToggleMute}
+          className="p-2 rounded-full text-[#b3b3b3] hover:text-white hover:bg-white/10 transition-colors"
+          title={isMuted ? 'Unmute' : 'Mute'}
+        >
+          {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+        <input
+          type="range"
+          min="0" max="100"
+          value={isMuted ? 0 : volume * 100}
+          onChange={(e) => onVolumeChange(parseFloat(e.target.value) / 100)}
+          className="w-24 h-1 cursor-pointer"
+          style={{ background: `linear-gradient(to right, #ffffff ${isMuted ? 0 : volume * 100}%, #4d4d4d ${isMuted ? 0 : volume * 100}%)` }}
+        />
       </div>
 
     </footer>
