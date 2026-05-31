@@ -10,7 +10,8 @@ const Sidebar = ({
   setSelectedPlaylistId,
   selectedPlaylistId,
   mobileMenuOpen,
-  setMobileMenuOpen
+  setMobileMenuOpen,
+  onToggleQueue
 }) => {
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },

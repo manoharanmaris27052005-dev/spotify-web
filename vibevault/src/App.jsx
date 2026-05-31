@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import QueueSidebar from './components/QueueSidebar';
 import { Howl, Howler } from 'howler';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
@@ -16,6 +17,7 @@ const App = () => {
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [queueSidebarOpen, setQueueSidebarOpen] = useState(false);
 
   // Lists & collections
   const [songs, setSongs] = useState([]);
@@ -525,6 +527,7 @@ const App = () => {
           selectedPlaylistId={selectedPlaylistId}
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
+          onToggleQueue={() => setQueueSidebarOpen(!queueSidebarOpen)}
         />
 
         {/* Central Workspace Area */}
@@ -576,6 +579,7 @@ const App = () => {
         onToggleFavorite={() => activeSong && handleToggleFavorite(activeSong.id)}
         analyserNode={analyserRef.current}
       />
+      {queueSidebarOpen && <QueueSidebar activeQueue={activeQueue} setActiveQueue={setActiveQueue} onClose={() => setQueueSidebarOpen(false)} />}
 
       {/* Config Sleep Timer dialog */}
       <SleepTimerModal
