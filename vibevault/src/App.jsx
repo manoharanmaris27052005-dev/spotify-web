@@ -66,31 +66,19 @@ const App = () => {
     const loadDBContents = async () => {
       try {
         let savedSongs = await getAllSongs();
-        
-        // --- 1. Automatic Cleanup of Old Duplicates ---
-        const seenTitles = new Set();
+
+        // Clean up any old WhatsApp audio songs from previous versions
         for (const song of savedSongs) {
-          // Clean the title in case it has (1), (2) etc.
-          const baseTitle = song.title.replace(/\s\(\d+\)$/, '').trim().toLowerCase();
-          if (seenTitles.has(baseTitle)) {
-            await deleteSongFromDB(song.id); // Wipe the duplicate permanently
-          } else {
-            seenTitles.add(baseTitle);
+          if (
+            song.title?.toLowerCase().includes('whatsapp') ||
+            song.title?.toLowerCase().includes('whatsapp audio') ||
+            song.artist === 'Cloud Sync'
+          ) {
+            await deleteSongFromDB(song.id);
           }
         }
-        
-        // Refresh the list after cleanup
-        savedSongs = await getAllSongs();
-        
-        // --- 2. Dynamic Prepopulation ---
-        if (savedSongs.length < 17) {
-          setIsDownloading(true);
-          await prepopulateDBWithAssets();
-          savedSongs = await getAllSongs();
-          setIsDownloading(false);
-          addToast("Offline cache successfully downloaded!", "success");
-        }
 
+        savedSongs = await getAllSongs();
         setSongs(savedSongs);
 
         const savedPlaylists = await getAllPlaylists();
@@ -124,106 +112,7 @@ const App = () => {
     loadDBContents();
   }, []);
 
-  // Prepopulate songs from static parent folders
-  const prepopulateDBWithAssets = async () => {
-    const urls = [
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709175/WhatsApp_Audio_2026-05-25_at_4.53.07_PM_kx8axm.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709175/WhatsApp_Audio_2026-05-25_at_4.53.10_PM_vljwnl.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709173/WhatsApp_Audio_2026-05-25_at_4.53.08_PM_ehv5s3.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709173/WhatsApp_Audio_2026-05-25_at_4.53.06_PM_iojeeh.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709171/WhatsApp_Audio_2026-05-25_at_4.53.06_PM_-_Copy_o0wawv.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709168/WhatsApp_Audio_2026-05-25_at_4.53.01_PM_len0qh.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709154/WhatsApp_Audio_2026-05-25_at_4.53.03_PM_ksx7zz.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709152/WhatsApp_Audio_2026-05-21_at_3.52.05_PM_rqtd1t.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709152/WhatsApp_Audio_2026-05-21_at_3.52.07_PM_dl4rjn.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709151/WhatsApp_Audio_2026-05-21_at_3.52.08_PM_uddnst.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709149/WhatsApp_Audio_2026-05-25_at_4.53.09_PM_yifo8h.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709148/Sorimuthu_Ayyanar_song_ra281l.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709114/WhatsApp_Audio_2026-05-25_at_4.53.02_PM_dyxmdq.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709114/WhatsApp_Audio_2026-05-25_at_4.53.00_PM_hlx98i.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709114/WhatsApp_Audio_2026-05-25_at_4.53.04_PM_lgj1hh.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709112/WhatsApp_Audio_2026-05-21_at_3.52.06_PM_kbjktq.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709112/WhatsApp_Audio_2026-05-25_at_4.53.05_PM_goxihh.m4a",
-      "https://res.cloudinary.com/da9hihmx5/video/upload/v1779709108/WhatsApp_Audio_2026-05-25_at_4.47.27_PM_gjejr3.m4a"
-    ];
 
-    const mockTracks = urls.map((url) => {
-      const parts = url.split('/');
-      let filename = parts[parts.length - 1].replace(/\.[^/.]+$/, "");
-      filename = filename.replace(/_[a-z0-9]{6}$/, ""); // remove cloudinary hash
-      let title = filename.replace(/_/g, ' ').replace('- Copy', '').trim(); // clean up name
-      return {
-        title: title,
-        artist: "Cloud Sync",
-        album: "VibeVault Imports",
-        src: url,
-        duration: "Unknown"
-      };
-    });
-
-    let existingSongs = await getAllSongs();
-    
-    for (let i = 0; i < mockTracks.length; i++) {
-      const track = mockTracks[i];
-      // Strict duplicate title prevention to keep UI clean
-      if (existingSongs.some(s => s.title.toLowerCase() === track.title.toLowerCase())) {
-        continue;
-      }
-      let displayTitle = track.title;
-
-      try {
-        const audioRes = await fetch(track.src);
-        const audioBlob = await audioRes.blob();
-
-        // Get duration directly if possible with timeout
-        const audio = new Audio();
-        audio.src = URL.createObjectURL(audioBlob);
-        const durationSeconds = await Promise.race([
-          new Promise((resolve) => {
-            audio.addEventListener('loadedmetadata', () => {
-              URL.revokeObjectURL(audio.src);
-              resolve(audio.duration || 0);
-            });
-            audio.addEventListener('error', () => resolve(0));
-          }),
-          new Promise(resolve => setTimeout(() => resolve(0), 1500))
-        ]);
-
-        const minutes = Math.floor(durationSeconds / 60);
-        const seconds = Math.floor(durationSeconds % 60);
-        const durationStr = durationSeconds > 0 ? `${minutes}:${seconds < 10 ? '0' : ''}${seconds}` : '3:00';
-
-        await saveSong({
-          file: audioBlob,
-          src: track.src,
-          title: displayTitle,
-          artist: track.artist,
-          album: track.album,
-          duration: durationStr,
-          cover: "", 
-          addedAt: Date.now()
-        });
-        
-        existingSongs.push({ title: displayTitle });
-      } catch (e) {
-        console.warn("Asset download failed, falling back to streaming for: ", track.title, e);
-        try {
-          await saveSong({
-            file: null,
-            src: track.src,
-            title: displayTitle,
-            artist: track.artist,
-            album: track.album,
-            duration: "Unknown",
-            cover: "", 
-            addedAt: Date.now()
-          });
-        } catch (err) {
-          console.error("Critical failure adding song:", err);
-        }
-      }
-    }
-  };
 
   // Re-fetch all songs catalog
   const refreshSongs = async () => {
